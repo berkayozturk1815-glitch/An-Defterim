@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anı Defterim</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📖%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Cormorant+Garamond:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d8b878;--ink:#3a2c20;--paper:#f5f0e6;--green:#1f3d3a;
+--w:min(360px,calc((100vw - 2rem)/2.05),calc((100dvh - 200px)/1.4));--h:calc(var(--w)*1.4);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-x:hidden;
+font-family:'Cormorant Garamond',Georgia,serif;color:#ecd9ae;
+background:radial-gradient(ellipse 80% 60% at 50% 38%,#6f4d37 0%,#47301f 55%,#25170f 100%)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+background:repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0 2px,rgba(0,0,0,.025) 2px 6px,rgba(255,255,255,.01) 6px 9px)}
+.scene{perspective:2200px;width:100%;display:flex;justify-content:center;position:relative}
+.book{position:relative;width:var(--w);height:var(--h);transform-style:preserve-3d;transition:transform 1s cubic-bezier(.5,.05,.2,1)}
+.book[data-s=f]{transform:translateX(0) rotateX(8deg)}
+.book[data-s=m]{transform:translateX(calc(var(--w)/2)) rotateX(8deg)}
+.book[data-s=b]{transform:translateX(var(--w)) rotateX(8deg)}
+.shadow{position:absolute;bottom:-4%;height:8%;left:0;width:100%;background:rgba(0,0,0,.55);filter:blur(16px);border-radius:50%;transition:left 1s,width 1s}
+.book[data-s=m] .shadow{left:-100%;width:200%}
+.book[data-s=b] .shadow{left:-100%;width:100%}
+.backcover{position:absolute;inset:-1.5% -1.5% -1.5% 0;border-radius:3px 12px 12px 3px;background:var(--green)}
+.leaf{position:absolute;inset:0;transform-origin:left center;transform-style:preserve-3d;transform:translateZ(var(--z,0px));transition:transform .9s cubic-bezier(.5,.05,.2,1)}
+.leaf.flipped{transform:translateZ(var(--z,0px)) rotateY(-180deg)}
+.face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.leaf{pointer-events:none}
+.leaf.act:not(.flipped) .front,.leaf.act.flipped .back{pointer-events:auto}
+.front{border-radius:3px 10px 10px 3px}
+.back{transform:rotateY(180deg);border-radius:10px 3px 3px 10px}
+.paper{background:linear-gradient(90deg,rgba(60,40,20,.24),rgba(60,40,20,0) 9%),var(--paper)}
+.back.paper{background:linear-gradient(270deg,rgba(60,40,20,.24),rgba(60,40,20,0) 9%),var(--paper)}
+.cover{cursor:pointer;display:grid;place-items:center;
+background:radial-gradient(circle at 30% 18%,rgba(255,255,255,.09),transparent 55%),repeating-linear-gradient(45deg,rgba(0,0,0,.09) 0 1px,transparent 1px 3px),var(--green);
+box-shadow:inset 10px 0 12px -6px rgba(0,0,0,.55),inset -2px 0 0 rgba(255,255,255,.05)}
+.frame{position:absolute;inset:7%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 6%}
+.frame h1{margin:0;font-style:italic;font-weight:600;font-size:calc(var(--w)/7.2);line-height:1.1;color:var(--gold);text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.frame i{display:block;width:30%;height:1px;background:var(--gold);margin-top:7%}
+.pg{position:absolute;inset:0;display:flex;flex-direction:column;padding:8% 8% 5%;gap:5%}
+.ph{position:relative;flex:none;aspect-ratio:1.25;background:#ebe4d6;border:calc(var(--w)/48) solid #fff;box-shadow:0 2px 8px rgba(40,25,10,.3);transform:rotate(-1.3deg);cursor:pointer;display:grid;place-items:center;margin-top:2%}
+.back .ph{transform:rotate(1.2deg)}
+.ph::before{content:"";position:absolute;top:-10px;left:36%;width:28%;height:16px;background:rgba(216,184,120,.6);transform:rotate(-3deg);z-index:1}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.empty{font-size:max(13px,calc(var(--w)/22));color:#9b8767;text-align:center;padding:0 8%;font-weight:600}
+.ph.has .empty{display:none}
+.rm{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(30,20,10,.7);color:#fff;font-size:18px;line-height:1;cursor:pointer;opacity:0;z-index:2}
+.ph:hover .rm,.ph:focus-within .rm,.rm:focus-visible{opacity:1}
+@media(hover:none){.rm{opacity:1}}
+textarea{flex:1;min-height:0;width:100%;border:0;resize:none;outline:0;padding:0 2px;color:var(--ink);font-family:'Caveat','Segoe Script',cursive;font-weight:500;
+font-size:max(15px,calc(var(--w)/14.5));line-height:1.55;background:repeating-linear-gradient(transparent 0 calc(1.55em - 1px),rgba(120,100,70,.25) calc(1.55em - 1px) 1.55em) local;transition:background-color .2s}
+textarea:focus{background-color:rgba(255,255,255,.45)}
+textarea::placeholder{color:#a8977c}
+.no{flex:none;font-size:14px;color:#a08c6e;font-weight:600}
+.front .no{align-self:flex-end}.back .no{align-self:flex-start}
+.bar{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;align-items:center;margin-top:2.4rem;padding:0 1rem}
+.lbl{min-width:6.5em;text-align:center;font-style:italic;font-size:18px}
+.b{font:600 17px 'Cormorant Garamond',Georgia,serif;padding:.5rem 1.1rem;border-radius:999px;border:1px solid rgba(216,184,120,.5);background:rgba(20,12,6,.45);color:#ecd9ae;cursor:pointer;transition:background .2s}
+.b:hover:not(:disabled){background:rgba(216,184,120,.2)}
+.b:disabled{opacity:.35;cursor:default}
+.b.main{background:var(--gold);color:#2a1d12;border-color:var(--gold)}
+.b.main:hover:not(:disabled){background:#e6c98f}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.cover:focus-visible{outline-offset:-8px}
+.hint{height:1.4em;margin:.8rem 0 0;font-style:italic;opacity:.8;font-size:17px}
+.gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:1.5rem;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% 38%,#6f4d37 0%,#47301f 55%,#25170f 100%)}
+.gate[hidden]{display:none}
+.gate h2{margin:0 0 .8rem;font-style:italic;font-weight:600;font-size:clamp(34px,8vw,52px);color:var(--gold)}
+.gate p{margin:.3rem auto 1rem;max-width:30em;font-size:19px;line-height:1.4}
+.gate small{display:block;margin-top:.8rem;opacity:.75;font-size:16px}
+.acct{position:fixed;top:calc(.8rem + env(safe-area-inset-top,0px));right:.8rem;z-index:5;font-size:16px;font-style:italic;padding:.3rem .8rem;border-radius:999px;background:rgba(20,12,6,.45);border:1px solid rgba(216,184,120,.35)}
+.gate input{display:block;width:min(320px,100%);margin:.5rem auto;padding:.7rem 1rem;border-radius:10px;border:1px solid rgba(216,184,120,.5);background:rgba(20,12,6,.5);color:#ecd9ae;font:600 18px 'Cormorant Garamond',Georgia,serif}
+.gate input::placeholder{color:#a8977c}
+.gb{display:flex;gap:.6rem;justify-content:center;margin-top:.8rem}
+.lnk{background:none;border:0;color:var(--gold);text-decoration:underline;font:inherit;font-size:17px;margin:.8rem .4rem 0;cursor:pointer}
+.acct .lnk{margin:0 0 0 .5rem}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,8,4,.85);display:flex;align-items:center;justify-content:center;padding:1rem;overflow:auto}
+.modal[hidden]{display:none}
+.mc{background:#2b1b11;border:1px solid rgba(216,184,120,.45);border-radius:14px;padding:1.4rem;max-width:760px;width:100%;text-align:center}
+.mc h2{margin:0 0 .4rem;font-style:italic;font-weight:600;font-size:34px;color:var(--gold)}
+.mc p{margin:.3rem 0;font-size:18px}
+.mc .gb{flex-wrap:wrap}
+.pbar{height:6px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden;margin:.7rem 0}
+.pbar i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+.prev{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin:1rem 0}
+.prev img,.prev video{max-height:46vh;max-width:100%;border-radius:8px;background:#000}
+.toast{position:fixed;left:50%;bottom:calc(1.2rem + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#1b110a;border:1px solid var(--gold);padding:.6rem 1rem;border-radius:10px;font-size:16px;transition:.3s;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){.book,.leaf,.shadow{transition-duration:.01s!important;transition-delay:0s!important}}
+</style>
+</head>
+<body>
+<div class="acct" id="acct" hidden><span id="who"></span><button class="lnk" id="prof" type="button">Profil</button><button class="lnk" id="out" type="button">Çıkış</button></div>
+<div class="gate" id="gate"><form id="lf"><h2>Anı Defterim</h2><p id="gmsg">Hesabına giriş yap veya yeni hesap oluştur.</p><input id="em" type="email" autocomplete="email" placeholder="E-posta" required><div id="lbox"><input id="pw" type="password" autocomplete="current-password" placeholder="Şifre (en az 6 karakter)"><div class="gb"><button class="b main" type="submit">Giriş yap</button><button class="b" id="reg" type="button">Kayıt ol</button></div><button class="lnk" id="forgot" type="button">Şifremi unuttum</button></div><div id="rbox" hidden><input id="rc" autocomplete="off" placeholder="Kurtarma kodu"><input id="np" type="password" autocomplete="new-password" placeholder="Yeni şifre (en az 6 karakter)"><div class="gb"><button class="b main" id="rdo" type="button">Şifreyi yenile</button><button class="b" id="rback" type="button">Vazgeç</button></div></div><small id="gnote"></small></form></div>
+<div class="scene"><div class="book" id="book" data-s="f"><div class="shadow"></div><div class="backcover"></div></div></div>
+<p class="hint" id="hint">Açmak için kitaba dokun</p>
+<div class="bar">
+  <button class="b" id="prev">Önceki</button>
+  <span class="lbl" id="lbl">Kapak</span>
+  <button class="b main" id="next">Defteri aç</button>
+  <button class="b" id="add">Sayfa ekle</button>
+  <button class="b" id="make">Defteri tamamla</button>
+</div>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mh"><div class="mc"><h2 id="mh">Anı Defterim hazırlanıyor</h2><p id="mst"></p><div class="pbar"><i id="pfill"></i></div><div class="prev"><img id="pimg" alt="Anılarından oluşan fotoğraf" hidden><video id="pvid" controls playsinline hidden></video></div><div class="gb"><button class="b main" id="dimg" disabled>Fotoğrafı indir</button><button class="b main" id="dvid" disabled>Videoyu indir</button><button class="b" id="mclose">Kapat</button></div></div></div>
+<div class="modal" id="cmodal" hidden role="dialog" aria-modal="true"><div class="mc"><h2>Kurtarma kodun</h2><p>Şifreni unutursan bu kodla yenileyebilirsin. Kodu güvenli bir yere kaydet, bir daha gösterilmeyecek.</p><p><code id="ccode" style="font-size:26px;letter-spacing:.06em;color:#d8b878"></code></p><div class="gb"><button class="b" id="ccopy" type="button">Kopyala</button><button class="b" id="cdl" type="button">Dosya olarak indir</button><button class="b main" id="cok" type="button">Kaydettim</button></div></div></div>
+<div class="modal" id="pmodal" hidden role="dialog" aria-modal="true"><div class="mc"><h2>Profil</h2><p id="pmail"></p><div class="gate" style="position:static;background:none;padding:0;display:block"><input id="op" type="password" autocomplete="current-password" placeholder="Şu anki şifre"><input id="np2" type="password" autocomplete="new-password" placeholder="Yeni şifre (en az 6 karakter)"></div><p id="pmsg"></p><div class="gb"><button class="b main" id="pchg" type="button">Şifreyi değiştir</button><button class="b" id="pcode" type="button">Yeni kurtarma kodu</button><button class="b" id="pclose" type="button">Kapat</button></div></div></div>
+<input type="file" id="file" accept="image/*" hidden>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s), KEY='ani-defterim';
+let n=4,cur=0,data={},target=0,tt,mode='',col=null;
+function loadLocal(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){n=Math.max(2,s.n||4);data=s.data||{};}}catch(e){}}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3500)}
+let sess=null,store=null;
+function save(i){
+  if(!sess)return;
+  (async()=>{try{
+    const p='pg/'+sess.id+'_';
+    if(i===undefined){await store.set(p+'meta',{c:await seal(sess.key,te.encode(JSON.stringify({n})))});return}
+    const d=data[i]||{};
+    if(d.img||d.note)await store.set(p+i,{c:await seal(sess.key,te.encode(JSON.stringify({img:d.img||'',note:d.note||''})))});
+    else await store.del(p+i);
+  }catch(e){toast('Kaydedilemedi. Bağlantını kontrol edip tekrar dene.')}})();
+}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function side(i){const d=data[i]||{};
+return `<div class="pg"><div class="ph${d.img?' has':''}" data-i="${i}" tabindex="0" role="button" aria-label="Fotoğraf ekle veya değiştir">${d.img?`<img src="${d.img}" alt="">`:''}<span class="empty">Fotoğraf eklemek için dokun</span>${d.img?`<button class="rm" data-rm="${i}" aria-label="Fotoğrafı kaldır">×</button>`:''}</div><textarea data-n="${i}" maxlength="400" placeholder="Bu anıyı not et…" aria-label="Not">${esc(d.note||'')}</textarea><span class="no">${i+1}</span></div>`}
+function build(){
+  document.querySelectorAll('.leaf').forEach(e=>e.remove());
+  const bk=$('#book');
+  for(let k=0;k<n;k++){
+    const l=document.createElement('div');l.className='leaf';l.dataset.k=k;
+    const fr=k==0?`<div class="face front cover" tabindex="0" role="button" aria-label="Defteri aç"><div class="frame"><h1>Anı Defterim</h1><i></i></div></div>`:`<div class="face front paper">${side(2*k-1)}</div>`;
+    l.innerHTML=fr+`<div class="face back paper">${side(2*k)}</div>`;
+    const f=k<cur;l.classList.toggle('flipped',f);l.style.zIndex=f?k+1:n-k;l.style.setProperty('--z',(f?k:n-k)*.4+'px');
+    bk.appendChild(l);
+  }
+  ui();
+}
+function ui(){
+  document.querySelectorAll('.leaf').forEach(l=>{const k=+l.dataset.k;l.classList.toggle('act',k===cur-1||k===cur)});
+  $('#book').dataset.s=cur==0?'f':cur==n?'b':'m';
+  $('#lbl').textContent=cur==0?'Kapak':cur==n?'Son':`Sayfa ${2*cur-1}–${2*cur}`;
+  $('#prev').disabled=cur==0;
+  $('#next').disabled=cur==n;
+  $('#next').textContent=cur==0?'Defteri aç':'Sonraki';
+  $('#hint').textContent=cur==0?'Açmak için kitaba dokun':cur==n?'Defterin tamamlandı. Video ve fotoğrafını oluşturabilirsin.':'';
+}
+function go(t){
+  t=Math.max(0,Math.min(n,t));if(t==cur)return;
+  const fw=t>cur,ids=[];
+  for(let k=Math.min(t,cur);k<Math.max(t,cur);k++)ids.push(k);
+  if(!fw)ids.reverse();
+  ids.forEach((k,r)=>{
+    const l=document.querySelector(`.leaf[data-k="${k}"]`);
+    l.style.transitionDelay=r*70+'ms';
+    l.classList.toggle('flipped',fw);l.style.setProperty('--z',(fw?k:n-k)*.4+'px');
+    setTimeout(()=>{l.style.zIndex=fw?k+1:n-k},r*70+430);
+  });
+  cur=t;ui();
+}
+$('#next').onclick=()=>go(cur+1);
+$('#prev').onclick=()=>go(cur-1);
+$('#add').onclick=()=>{n++;save();build();go(n-1);};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowRight')go(cur+1);
+  if(e.key==='ArrowLeft')go(cur-1);
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('cover')){e.preventDefault();go(1)}
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('ph')){e.preventDefault();pick(+e.target.dataset.i)}
+});
+function pick(i){target=i;$('#file').value='';$('#file').click()}
+$('#book').addEventListener('click',e=>{
+  const rm=e.target.closest('.rm');
+  if(rm){e.stopPropagation();const i=+rm.dataset.rm;if(data[i]){delete data[i].img;save(i);build();}return}
+  if(e.target.closest('.cover')){go(1);return}
+  const ph=e.target.closest('.ph');if(ph)pick(+ph.dataset.i);
+});
+$('#book').addEventListener('input',e=>{
+  const t=e.target;if(t.tagName!=='TEXTAREA')return;
+  const i=+t.dataset.n;data[i]=data[i]||{};data[i].note=t.value;
+  save.t=save.t||{};clearTimeout(save.t[i]);save.t[i]=setTimeout(()=>save(i),600);
+});
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const url=URL.createObjectURL(f),img=new Image();
+  img.onload=()=>{
+    URL.revokeObjectURL(url);let out='';
+    for(const [m,q] of [[800,.7],[700,.6],[600,.5],[500,.45],[400,.4]]){
+      const k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');
+      c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      out=c.toDataURL('image/jpeg',q);if(out.length<140000)break;
+    }
+    data[target]=data[target]||{};data[target].img=out;save(target);build();
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('Bu fotoğraf açılamadı. JPG veya PNG dene.')};
+  img.src=url;
+});
+
+/* ---- Defteri tamamla: fotoğraf + video ---- */
+const entries=()=>Object.keys(data).map(Number).sort((a,b)=>a-b).filter(i=>data[i]&&(data[i].img||(data[i].note||'').trim())).slice(0,20);
+const loadImg=src=>new Promise((r,j)=>{const m=new Image();m.onload=()=>r(m);m.onerror=j;m.src=src});
+function wrapText(c,t,w){
+  const out=[];
+  t.split('\n').forEach(p=>{
+    let l='';
+    p.split(/\s+/).filter(Boolean).forEach(wd=>{
+      while(c.measureText(wd).width>w){
+        let i=wd.length;while(i>1&&c.measureText(wd.slice(0,i)).width>w)i--;
+        if(l){out.push(l);l=''}
+        out.push(wd.slice(0,i));wd=wd.slice(i);
+      }
+      const x=l?l+' '+wd:wd;
+      if(c.measureText(x).width>w&&l){out.push(l);l=wd}else l=x;
+    });
+    out.push(l);
+  });
+  return out;
+}
+function bgFill(c,W,H){const g=c.createRadialGradient(W/2,H*.35,W*.1,W/2,H*.5,H*.85);g.addColorStop(0,'#6f4d37');g.addColorStop(.55,'#47301f');g.addColorStop(1,'#25170f');c.fillStyle=g;c.fillRect(0,0,W,H)}
+function drawCard(c,e,x,y,w,h,rot){
+  const pad=w*.055,fs=w*.085,lh=fs*1.25;
+  c.save();c.translate(x+w/2,y+h/2);c.rotate(rot*Math.PI/180);
+  c.shadowColor='rgba(0,0,0,.5)';c.shadowBlur=w*.05;c.shadowOffsetY=w*.02;
+  c.fillStyle='#f5f0e6';c.fillRect(-w/2,-h/2,w,h);c.shadowColor='transparent';
+  let ty=-h/2+pad;
+  if(e.im){
+    const pw=w-2*pad,ph=pw*.78,s=Math.max(pw/e.im.width,ph/e.im.height),dw=e.im.width*s,dh=e.im.height*s;
+    c.save();c.beginPath();c.rect(-w/2+pad,ty,pw,ph);c.clip();c.drawImage(e.im,-w/2+pad+(pw-dw)/2,ty+(ph-dh)/2,dw,dh);c.restore();
+    ty+=ph+pad*.8;
+  }
+  c.save();c.beginPath();c.rect(-w/2,-h/2,w,h);c.clip();c.textAlign='left';c.fillStyle='#3a2c20';c.font=`500 ${fs}px Caveat, 'Segoe Script', cursive`;c.textBaseline='top';
+  if(e.note){
+    const max=Math.max(1,Math.floor((h/2-ty-pad)/lh));let ls=wrapText(c,e.note,w-2*pad);
+    if(ls.length>max){ls=ls.slice(0,max);ls[max-1]=ls[max-1].replace(/\s*\S*$/,'')+'…'}
+    ls.forEach((l,i)=>c.fillText(l,-w/2+pad,ty+i*lh));
+  }
+  c.restore();
+  c.fillStyle='rgba(216,184,120,.7)';c.fillRect(-w*.14,-h/2-w*.02,w*.28,w*.05);
+  c.restore();
+}
+const dateTr=()=>new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+const TITLE="italic 600 96px 'Cormorant Garamond',Georgia,serif";
+async function makePoster(items){
+  const k=items.length,cols=k<=1?1:k<=4?2:3,W=1080,M=70,G=44,HD=270;
+  const cw=(W-2*M-G*(cols-1))/cols,ch=cw*1.28,rows=Math.ceil(k/cols),H=Math.round(HD+rows*ch+(rows-1)*G+M);
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+  bgFill(c,W,H);c.textAlign='center';c.textBaseline='alphabetic';
+  c.fillStyle='#d8b878';c.font=TITLE.replace('96px','112px');c.fillText('Anı Defterim',W/2,150);
+  c.fillStyle='#ecd9ae';c.font=TITLE.replace('96px','44px');c.fillText(k+' anı, '+dateTr(),W/2,215);
+  items.forEach((e,i)=>drawCard(c,e,M+(i%cols)*(cw+G),HD+Math.floor(i/cols)*(ch+G),cw,ch,i%2?1.4:-1.4));
+  return new Promise(r=>cv.toBlob(r,'image/jpeg',.92));
+}
+async function makeVideo(items,onP){
+  const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'];
+  const mime=window.MediaRecorder&&types.find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mime)throw new Error('nosupport');
+  const W=720,H=960,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+  const segs=[{k:'t'},...items.map(e=>({k:'e',e})),{k:'o'}],D=segs.map(s=>s.k=='e'?3.2:2.2),total=D.reduce((a,b)=>a+b,0);
+  function frame(t){
+    bgFill(c,W,H);let seg=0,a=0;
+    for(;seg<D.length-1&&t>=a+D[seg];seg++)a+=D[seg];
+    const u=t-a,d=D[seg],s=segs[seg];
+    c.globalAlpha=Math.max(0,Math.min(1,u/.45,(d-u)/.45));
+    if(s.k=='e'){const z=.95+.05*(u/d);drawCard(c,s.e,W/2-280*z,(H-720*z)/2,560*z,720*z,seg%2?1.2:-1.2)}
+    else{
+      c.textAlign='center';c.textBaseline='alphabetic';
+      c.fillStyle='#d8b878';c.font=TITLE;c.fillText('Anı Defterim',W/2,H/2);
+      c.fillStyle='#ecd9ae';c.font=TITLE.replace('96px','38px');c.fillText(s.k=='t'?items.length+' anı':dateTr(),W/2,H/2+64);
+    }
+    c.globalAlpha=1;
+  }
+  const rec=new MediaRecorder(cv.captureStream(30),{mimeType:mime,videoBitsPerSecond:3e6}),parts=[];
+  rec.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
+  const done=new Promise(r=>{rec.onstop=r});
+  frame(0);rec.start(250);const t0=performance.now();
+  await new Promise(res=>{(function tick(){const t=(performance.now()-t0)/1000;if(t>=total){res();return}frame(t);onP(t/total);requestAnimationFrame(tick)})()});
+  frame(total-.01);await new Promise(r=>setTimeout(r,300));rec.stop();await done;
+  return {blob:new Blob(parts,{type:mime.split(';')[0]}),ext:mime.includes('mp4')?'mp4':'webm'};
+}
+async function download(blob,name){
+  try{
+    const d=window.claude&&claude.use?await claude.use('downloads'):null;
+    if(d){await d.save({filename:name,data:blob});return}
+  }catch(e){if(e&&e.code==='declined')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+let outImg=null,outVid=null,making=false;
+function closeModal(){$('#modal').hidden=true;making=false;['pimg','pvid'].forEach(i=>{const e=$('#'+i);if(e.src)URL.revokeObjectURL(e.src);e.removeAttribute('src');e.hidden=true})}
+$('#mclose').onclick=closeModal;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden)closeModal()});
+$('#dimg').onclick=()=>outImg&&download(outImg,'ani-defterim.jpg');
+$('#dvid').onclick=()=>outVid&&download(outVid.blob,'ani-defterim.'+outVid.ext);
+$('#make').onclick=async()=>{
+  const es=entries();
+  if(!es.length){toast('Önce deftere bir fotoğraf veya not ekle.');return}
+  if(making)return;making=true;outImg=outVid=null;
+  const st=$('#mst'),pf=$('#pfill');
+  $('#dimg').disabled=$('#dvid').disabled=true;pf.style.width='0';$('#modal').hidden=false;
+  try{
+    st.textContent='Fotoğraf hazırlanıyor…';
+    await Promise.all([document.fonts.load(TITLE),document.fonts.load("500 40px Caveat")]).catch(()=>{});
+    const items=await Promise.all(es.map(async i=>({im:data[i].img?await loadImg(data[i].img):null,note:(data[i].note||'').trim()})));
+    outImg=await makePoster(items);
+    $('#pimg').src=URL.createObjectURL(outImg);$('#pimg').hidden=false;$('#dimg').disabled=false;
+    st.textContent='Video hazırlanıyor. Bu sekmeyi açık tut.';
+    try{
+      outVid=await makeVideo(items,p=>{pf.style.width=Math.round(p*100)+'%'});
+      $('#pvid').src=URL.createObjectURL(outVid.blob);$('#pvid').hidden=false;$('#dvid').disabled=false;
+      st.textContent=Object.keys(data).length>20?'Hazır. İlk 20 anı kullanıldı.':'Hazır. İstediğini indirebilirsin.';
+    }catch(e){st.textContent='Fotoğraf hazır. Bu tarayıcı video oluşturamıyor, Chrome, Edge veya Firefox dene.'}
+    pf.style.width='100%';
+  }catch(e){st.textContent='Bir sorun oluştu. Sayfayı yenileyip tekrar dene.'}
+  making=false;
+};
+const HELLO='Hesabına giriş yap veya yeni hesap oluştur.';
+const te=new TextEncoder(),td=new TextDecoder();
+const b64=b=>{let t='';new Uint8Array(b).forEach(x=>t+=String.fromCharCode(x));return btoa(t)};
+const unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+const rnd=k=>crypto.getRandomValues(new Uint8Array(k));
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function derive(secret,salt){const k=await crypto.subtle.importKey('raw',te.encode(secret),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function seal(key,bytes){const iv=rnd(12),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,bytes)),o=new Uint8Array(12+ct.length);o.set(iv);o.set(ct,12);return b64(o)}
+async function unseal(key,t){const a=unb64(t);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:a.slice(0,12)},key,a.slice(12)))}
+const toKey=raw=>crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);
+async function wrapFor(secret,raw){const salt=rnd(16);return{s:b64(salt),w:await seal(await derive(secret,salt),raw)}}
+const unwrapWith=(secret,r)=>derive(secret,unb64(r.s)).then(k=>unseal(k,r.w));
+const eid=async e=>hex(await crypto.subtle.digest('SHA-256',te.encode('ani:'+e))).slice(0,32);
+const norm=c=>c.toUpperCase().replace(/[^A-Z0-9]/g,'');
+function makeCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=rnd(20);let t='';r.forEach((x,i)=>{t+=A[x&31];if(i%4==3&&i<19)t+='-'});return t}
+const localStore={get:async p=>{try{return JSON.parse(localStorage.getItem('ani2:'+p))}catch(e){return null}},set:async(p,v)=>{localStorage.setItem('ani2:'+p,JSON.stringify(v))},del:async p=>{localStorage.removeItem('ani2:'+p)}};
+const cloudStore=d=>({get:async p=>{const x=await d.doc(p).get();return x.exists?x.data():null},set:(p,v)=>d.doc(p).set(v),del:p=>d.doc(p).delete()});
+async function loadAll(){
+  data={};n=4;const p='pg/'+sess.id+'_';
+  const m=await store.get(p+'meta');
+  if(m){try{n=Math.max(2,JSON.parse(td.decode(await unseal(sess.key,m.c))).n||4)}catch(e){}}
+  await Promise.all(Array.from({length:2*n-1},(_,i)=>store.get(p+i).then(async d=>{
+    if(d){try{const v=JSON.parse(td.decode(await unseal(sess.key,d.c)));data[i]={img:v.img||undefined,note:v.note||''}}catch(e){}}
+  })));
+}
+function showCode(code,after){
+  $('#ccode').textContent=code;$('#cmodal').hidden=false;
+  $('#cok').onclick=()=>{$('#cmodal').hidden=true;if(after)after()};
+  $('#ccopy').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>toast('Kod kopyalandı.')).catch(()=>toast('Kopyalanamadı. Kodu elle yaz.'))};
+  $('#cdl').onclick=()=>download(new Blob(['Anı Defterim kurtarma kodu\n'+sess.email+'\n'+code+'\n'],{type:'text/plain'}),'ani-defterim-kurtarma-kodu.txt');
+}
+function start(){
+  build();
+  const g=$('#gate'),msg=$('#gmsg');
+  let cloud=false;
+  const ready=(async()=>{
+    try{if(window.claude&&claude.use){const d=await claude.use('db'),u=await claude.use('user');if(d&&(!u||u.can('data.write')!==false)){store=cloudStore(d);cloud=true}}}catch(e){}
+    if(!store)store=localStore;
+    $('#gnote').textContent=cloud?'Hesapların şifreli olarak saklanır. Başka bir cihazdan da giriş yapabilirsin.':'Bulut kaydı kapalı. Hesaplar yalnızca bu cihazda saklanır.';
+  })();
+  async function enter(){
+    try{await loadAll()}catch(e){toast('Anılar yüklenemedi. Sayfayı yenileyip tekrar dene.')}
+    cur=0;$('#who').textContent=sess.email;$('#acct').hidden=false;g.hidden=true;msg.textContent=HELLO;build();
+    try{localStorage.setItem('ani2:session',JSON.stringify({e:sess.email,k:b64(sess.raw)}))}catch(e){}
+  }
+  function leave(){
+    sess=null;data={};n=4;cur=0;
+    try{localStorage.removeItem('ani2:session')}catch(e){}
+    $('#acct').hidden=true;g.hidden=false;$('#pw').value='';build();
+  }
+  const mail=()=>$('#em').value.trim().toLowerCase();
+  const fail=e=>{msg.textContent='Bir sorun oluştu. Bağlantını kontrol edip tekrar dene.'};
+  $('#lf').onsubmit=async e=>{
+    e.preventDefault();
+    const em=mail(),pw=$('#pw').value;
+    if(!em||!pw){msg.textContent='E-posta ve şifre gir.';return}
+    msg.textContent='Giriş yapılıyor…';
+    try{
+      await ready;const id=await eid(em),rec=await store.get('acc/'+id);
+      if(!rec){msg.textContent='Bu e-posta ile hesap bulunamadı. Önce “Kayıt ol”a bas.';return}
+      let raw;try{raw=await unwrapWith(pw,rec.pw)}catch(x){msg.textContent='Şifre hatalı.';return}
+      sess={id,email:em,raw,key:await toKey(raw)};await enter();
+    }catch(x){fail()}
+  };
+  $('#reg').onclick=async()=>{
+    const em=mail(),pw=$('#pw').value;
+    if(!/^\S+@\S+\.\S+$/.test(em)){msg.textContent='Geçerli bir e-posta adresi yaz.';return}
+    if(pw.length<6){msg.textContent='Şifre en az 6 karakter olmalı.';return}
+    msg.textContent='Hesap oluşturuluyor…';
+    try{
+      await ready;const id=await eid(em);
+      if(await store.get('acc/'+id)){msg.textContent='Bu e-posta ile zaten bir hesap var. Giriş yapmayı dene.';return}
+      const raw=rnd(32),code=makeCode();
+      await store.set('acc/'+id,{pw:await wrapFor(pw,raw),rc:await wrapFor(norm(code),raw)});
+      sess={id,email:em,raw,key:await toKey(raw)};
+      await store.set('pg/'+id+'_meta',{c:await seal(sess.key,te.encode(JSON.stringify({n:4})))});
+      await enter();showCode(code);
+    }catch(x){msg.textContent='Hesap oluşturulamadı. '+(cloud?'Bağlantını ve yazma iznini kontrol et.':'Tarayıcı depolaması kapalı olabilir (gizli sekme?).')}
+  };
+  $('#forgot').onclick=()=>{$('#lbox').hidden=true;$('#rbox').hidden=false;msg.textContent='E-postanı, kurtarma kodunu ve yeni şifreni yaz.'};
+  $('#rback').onclick=()=>{$('#rbox').hidden=true;$('#lbox').hidden=false;msg.textContent=HELLO};
+  $('#rdo').onclick=async()=>{
+    const em=mail(),code=norm($('#rc').value),np=$('#np').value;
+    if(!em||!code){msg.textContent='E-posta ve kurtarma kodunu gir.';return}
+    if(np.length<6){msg.textContent='Yeni şifre en az 6 karakter olmalı.';return}
+    msg.textContent='Şifre yenileniyor…';
+    try{
+      await ready;const id=await eid(em),rec=await store.get('acc/'+id);
+      if(!rec){msg.textContent='Bu e-posta ile hesap bulunamadı.';return}
+      let raw;try{raw=await unwrapWith(code,rec.rc)}catch(x){msg.textContent='Kurtarma kodu hatalı.';return}
+      await store.set('acc/'+id,{...rec,pw:await wrapFor(np,raw)});
+      sess={id,email:em,raw,key:await toKey(raw)};$('#rbox').hidden=true;$('#lbox').hidden=false;$('#rc').value=$('#np').value='';
+      await enter();toast('Şifren yenilendi.');
+    }catch(x){fail()}
+  };
+  $('#out').onclick=leave;
+  $('#prof').onclick=()=>{$('#pmail').textContent=sess?sess.email:'';$('#pmsg').textContent='';$('#op').value=$('#np2').value='';$('#pmodal').hidden=false};
+  $('#pclose').onclick=()=>{$('#pmodal').hidden=true};
+  $('#pchg').onclick=async()=>{
+    const op=$('#op').value,np=$('#np2').value,pm=$('#pmsg');
+    if(!op||np.length<6){pm.textContent='Şu anki şifreni ve en az 6 karakterli yeni şifreni yaz.';return}
+    try{
+      const rec=await store.get('acc/'+sess.id);
+      try{await unwrapWith(op,rec.pw)}catch(x){pm.textContent='Şu anki şifre hatalı.';return}
+      await store.set('acc/'+sess.id,{...rec,pw:await wrapFor(np,sess.raw)});
+      $('#op').value=$('#np2').value='';pm.textContent='Şifren değiştirildi.';
+    }catch(x){pm.textContent='Değiştirilemedi. Bağlantını kontrol edip tekrar dene.'}
+  };
+  $('#pcode').onclick=async()=>{
+    try{
+      const rec=await store.get('acc/'+sess.id),code=makeCode();
+      await store.set('acc/'+sess.id,{...rec,rc:await wrapFor(norm(code),sess.raw)});
+      $('#pmodal').hidden=true;showCode(code);
+    }catch(x){$('#pmsg').textContent='Kod oluşturulamadı. Bağlantını kontrol edip tekrar dene.'}
+  };
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#pmodal').hidden=true});
+  ready.then(async()=>{
+    try{
+      const ss=JSON.parse(localStorage.getItem('ani2:session')||'null');
+      if(ss&&ss.e&&ss.k){const raw=unb64(ss.k);sess={id:await eid(ss.e),email:ss.e,raw,key:await toKey(raw)};
+        if(await store.get('acc/'+sess.id))await enter();else sess=null}
+    }catch(e){sess=null}
+  });
+}
+start();
+</script>
+</body>
+</html>
